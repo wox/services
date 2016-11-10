@@ -1,0 +1,62 @@
+version: "2"
+
+services:
+  proxy:
+    image: traefik
+    #command: -c /dev/null --web --docker --docker.endpoint=tcp://172.20.0.3:4000 --logLevel=DEBUG
+    command: -c /dev/null --web --docker --docker.endpoint=unix:///var/run/docker.sock --logLevel=DEBUG
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: [network]
+    environment:
+      - "constraint:node==node0"
+
+  web:
+    image: wxnrd/static
+    volumes: 
+      #- /data/index.html:/www/index.html
+      - ./index.html:/www/index.html
+    labels:
+      - "traefik.backend=web"
+      - "traefik.frontend.rule=Path:/"
+      - "traefik.port=8000"
+    networks: [network]
+
+  service1:
+    image: wxnrd/probe
+    labels:
+      - "traefik.backend=service1"
+      - "traefik.frontend.rule=Path:/api/service1"
+      - "traefik.port=8000"
+    networks: [network]
+
+  service2:
+    image: wxnrd/probe
+    labels:
+      - "traefik.backend=service2"
+      - "traefik.frontend.rule=Path:/api/service2"
+      - "traefik.port=8000"
+    networks: [network]
+  
+  # client_1:
+  #   image: byrnedo/alpine-curl
+  #   entrypoint: /bin/sh -c 'while true; do curl -s proxy/api/service1 && sleep 1; done'
+  #   networks: [network]
+
+  # client_2:
+  #   image: byrnedo/alpine-curl
+  #   entrypoint: /bin/sh -c 'while true; do curl -s service1_backend:8000 && sleep 1; done'
+  #   networks: [network]
+
+networks:
+  network:
+    #driver: overlay
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.0.0/24
+        gateway: 172.16.0.1
