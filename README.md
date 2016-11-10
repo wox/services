@@ -2,22 +2,22 @@
 
 Create a local Docker cluster using Docker-in-Docker
 ```
-cluster_up.sh
+$ ./cluster_up.sh
 ```
 
 Deploy a Docker Swarm in the cluster
 ```
-swarm_up.sh
+$ ./swarm_up.sh
 ```
   
 Deploy a Treafik proxy and some test services in the Swarm
 ```
-services_up.sh
+$ ./services_up.sh
 ```
 
 Open the test application @ localhost and watch what happens when scaling a backend service
 ```
-docker-compose -H :4000 -p demo -f services.yml scale service1_backend=2 
+$ docker-compose -H :4000 -p demo -f services.yml scale service1=2 
 ```
 
 * Test app @ localhost
